@@ -1,0 +1,1195 @@
+{
+  "info": {
+    "name": "Job Tracking - ATS Recruitment System API",
+    "description": "Complete API collection for Job Tracking and ATS Recruitment System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "API Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/health",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
+            },
+            "description": "Check if API is running and database is connected"
+          },
+          "response": []
+        },
+        {
+          "name": "Root Endpoint",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            },
+            "description": "Check API running status"
+          },
+          "response": []
+        }
+      ],
+      "description": "API health check endpoints"
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123!\",\n  \"phone\": \"+1234567890\",\n  \"role\": \"candidate\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Register a new user. Roles: candidate, recruiter, hiring_manager, admin"
+          },
+          "response": []
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Login with email and password. Returns JWT token in response."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "me"
+              ]
+            },
+            "description": "Get current authenticated user details"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"phone\": \"+1987654321\",\n  \"bio\": \"Updated bio\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/profile",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "profile"
+              ]
+            },
+            "description": "Update current user's profile"
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Logout current user"
+          },
+          "response": []
+        }
+      ],
+      "description": "Authentication endpoints"
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users"
+              ]
+            },
+            "description": "Get all users (Recruiter, Hiring Manager, Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Search Candidates",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/candidates",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "candidates"
+              ]
+            },
+            "description": "Search for candidates (Recruiter, Hiring Manager, Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/users/{{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}"
+              ]
+            },
+            "description": "Get user details by ID (Recruiter, Hiring Manager, Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Updated\",\n  \"lastName\": \"Name\",\n  \"email\": \"updated@example.com\",\n  \"phone\": \"+9876543210\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/users/{{userId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}"
+              ]
+            },
+            "description": "Update user (Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Toggle User Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"inactive\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/users/{{userId}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "users",
+                "{{userId}}",
+                "status"
+              ]
+            },
+            "description": "Toggle user active/inactive status (Admin only)"
+          },
+          "response": []
+        }
+      ],
+      "description": "User management endpoints"
+    },
+    {
+      "name": "Jobs",
+      "item": [
+        {
+          "name": "Get All Jobs",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/jobs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "jobs"
+              ]
+            },
+            "description": "Get all open job postings (Public - No authentication required)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Job by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/jobs/{{jobId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "jobs",
+                "{{jobId}}"
+              ]
+            },
+            "description": "Get job details by ID (Public - No authentication required)"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Job",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Senior Software Engineer\",\n  \"description\": \"We are looking for an experienced software engineer\",\n  \"location\": \"New York, NY\",\n  \"department\": \"Engineering\",\n  \"salary\": 120000,\n  \"salaryMax\": 150000,\n  \"jobType\": \"Full-Time\",\n  \"experienceLevel\": \"Senior\",\n  \"requiredSkills\": [\"JavaScript\", \"React\", \"Node.js\"],\n  \"responsibilities\": [\"Design and develop features\", \"Code review\"],\n  \"requirements\": [\"5+ years experience\", \"BS in Computer Science\"],\n  \"benefits\": [\"Health Insurance\", \"401k\", \"Flexible Hours\"],\n  \"status\": \"open\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/jobs",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "jobs"
+              ]
+            },
+            "description": "Create a new job posting (Recruiter, Hiring Manager, Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Job",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Job Title\",\n  \"description\": \"Updated description\",\n  \"status\": \"closed\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/jobs/{{jobId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "jobs",
+                "{{jobId}}"
+              ]
+            },
+            "description": "Update job posting (Recruiter, Hiring Manager, Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Job",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/jobs/{{jobId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "jobs",
+                "{{jobId}}"
+              ]
+            },
+            "description": "Delete job posting (Admin only)"
+          },
+          "response": []
+        }
+      ],
+      "description": "Job management endpoints"
+    },
+    {
+      "name": "Applications",
+      "item": [
+        {
+          "name": "Apply for Job",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"coverLetter\": \"I am interested in this position...\",\n  \"resume\": \"Link or ID to resume\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/applications/jobs/{{jobId}}/apply",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "applications",
+                "jobs",
+                "{{jobId}}",
+                "apply"
+              ]
+            },
+            "description": "Apply for a job (Candidate only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/applications/my-applications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "applications",
+                "my-applications"
+              ]
+            },
+            "description": "Get current candidate's applications (Candidate only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/applications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "applications"
+              ]
+            },
+            "description": "Get all applications (Recruiter, Hiring Manager, Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Application by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/applications/{{applicationId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "applications",
+                "{{applicationId}}"
+              ]
+            },
+            "description": "Get application details by ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Application Status",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"shortlisted\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/applications/{{applicationId}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "applications",
+                "{{applicationId}}",
+                "status"
+              ]
+            },
+            "description": "Update application status (Recruiter, Hiring Manager, Admin only). Status values: pending, shortlisted, rejected, accepted"
+          },
+          "response": []
+        },
+        {
+          "name": "Add Note to Application",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"note\": \"Good technical background. Schedule for technical interview.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/applications/{{applicationId}}/notes",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "applications",
+                "{{applicationId}}",
+                "notes"
+              ]
+            },
+            "description": "Add internal notes to application (Recruiter, Hiring Manager, Admin only)"
+          },
+          "response": []
+        }
+      ],
+      "description": "Job application endpoints"
+    },
+    {
+      "name": "Interviews",
+      "item": [
+        {
+          "name": "Schedule Interview",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"applicationId\": \"{{applicationId}}\",\n  \"candidateId\": \"{{candidateId}}\",\n  \"interviewerIds\": [\"{{recruiterId}}\"],\n  \"scheduledDate\": \"2024-06-15\",\n  \"scheduledTime\": \"10:00\",\n  \"location\": \"Conference Room A\",\n  \"interviewType\": \"technical\",\n  \"description\": \"Technical interview for SWE position\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/interviews",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "interviews"
+              ]
+            },
+            "description": "Schedule a new interview (Recruiter, Hiring Manager, Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Interviews",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/interviews",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "interviews"
+              ]
+            },
+            "description": "Get all interviews (Recruiter, Hiring Manager, Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get My Interviews",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/interviews/my-interviews",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "interviews",
+                "my-interviews"
+              ]
+            },
+            "description": "Get candidate's scheduled interviews (Candidate only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Interview by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/interviews/{{interviewId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "interviews",
+                "{{interviewId}}"
+              ]
+            },
+            "description": "Get interview details by ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Interview",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"scheduledTime\": \"14:00\",\n  \"location\": \"Conference Room B\",\n  \"description\": \"Updated interview details\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/interviews/{{interviewId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "interviews",
+                "{{interviewId}}"
+              ]
+            },
+            "description": "Update interview details (Recruiter, Hiring Manager, Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Submit Interview Feedback",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rating\": 4,\n  \"feedback\": \"Excellent technical knowledge. Strong problem-solving skills.\",\n  \"recommendation\": \"move_to_next_round\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/interviews/{{interviewId}}/feedback",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "interviews",
+                "{{interviewId}}",
+                "feedback"
+              ]
+            },
+            "description": "Submit feedback after interview (Recruiter, Hiring Manager, Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Interview",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Candidate declined\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/interviews/{{interviewId}}/cancel",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "interviews",
+                "{{interviewId}}",
+                "cancel"
+              ]
+            },
+            "description": "Cancel scheduled interview (Recruiter, Hiring Manager, Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Reschedule Interview",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"scheduledDate\": \"2024-06-20\",\n  \"scheduledTime\": \"11:00\",\n  \"reason\": \"Candidate requested reschedule\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/interviews/{{interviewId}}/reschedule",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "interviews",
+                "{{interviewId}}",
+                "reschedule"
+              ]
+            },
+            "description": "Reschedule interview (Recruiter, Hiring Manager, Admin only)"
+          },
+          "response": []
+        }
+      ],
+      "description": "Interview management endpoints"
+    },
+    {
+      "name": "Offers",
+      "item": [
+        {
+          "name": "Create Offer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"candidateId\": \"{{candidateId}}\",\n  \"jobId\": \"{{jobId}}\",\n  \"salary\": 120000,\n  \"benefits\": [\"Health Insurance\", \"401k\", \"Remote Work\"],\n  \"startDate\": \"2024-07-01\",\n  \"position\": \"Senior Software Engineer\",\n  \"department\": \"Engineering\",\n  \"reportingTo\": \"Engineering Manager\",\n  \"expiryDate\": \"2024-06-30\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/offers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "offers"
+              ]
+            },
+            "description": "Create a new job offer (Recruiter, Hiring Manager, Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Offers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/offers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "offers"
+              ]
+            },
+            "description": "Get all offers (Recruiter, Hiring Manager, Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Offer by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/offers/{{offerId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "offers",
+                "{{offerId}}"
+              ]
+            },
+            "description": "Get offer details by ID (Recruiter, Hiring Manager, Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Offer",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"salary\": 130000,\n  \"benefits\": [\"Health Insurance\", \"401k\", \"Remote Work\", \"Stock Options\"],\n  \"startDate\": \"2024-07-15\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/offers/{{offerId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "offers",
+                "{{offerId}}"
+              ]
+            },
+            "description": "Update offer details (Recruiter, Hiring Manager, Admin only)"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Offer Status",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"accepted\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/offers/{{offerId}}/status",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "offers",
+                "{{offerId}}",
+                "status"
+              ]
+            },
+            "description": "Update offer status (Recruiter, Hiring Manager, Admin only). Status values: pending, accepted, rejected, withdrawn, expired"
+          },
+          "response": []
+        },
+        {
+          "name": "Withdraw Offer",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/offers/{{offerId}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "offers",
+                "{{offerId}}"
+              ]
+            },
+            "description": "Withdraw/delete job offer (Recruiter, Hiring Manager, Admin only)"
+          },
+          "response": []
+        }
+      ],
+      "description": "Job offer management endpoints"
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "JWT Authentication Token - Get from login endpoint"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string",
+      "description": "User ID"
+    },
+    {
+      "key": "jobId",
+      "value": "",
+      "type": "string",
+      "description": "Job ID"
+    },
+    {
+      "key": "applicationId",
+      "value": "",
+      "type": "string",
+      "description": "Application ID"
+    },
+    {
+      "key": "interviewId",
+      "value": "",
+      "type": "string",
+      "description": "Interview ID"
+    },
+    {
+      "key": "offerId",
+      "value": "",
+      "type": "string",
+      "description": "Offer ID"
+    },
+    {
+      "key": "candidateId",
+      "value": "",
+      "type": "string",
+      "description": "Candidate User ID"
+    },
+    {
+      "key": "recruiterId",
+      "value": "",
+      "type": "string",
+      "description": "Recruiter User ID"
+    }
+  ]
+}
