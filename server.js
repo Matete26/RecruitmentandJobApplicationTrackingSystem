@@ -1,13 +1,24 @@
-import app from "./app.js";
-import connectDB from "./src/config/db.js";
-import dotenv from "dotenv";
+import 'dotenv/config'; // ✅ line 1
 
-dotenv.config();
+import app from './app.js';
 
 const PORT = process.env.PORT || 5000;
 
-connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server running on  http://localhost:${PORT}`);
-  });
-});
+const startServer = async () => {
+  try {
+    app.listen(PORT, () => {
+      console.log(`\n🚀 ATS Recruitment API Server Started`);
+      console.log(`📍 Running on: http://localhost:${PORT}`);
+      console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`⏰ Started at: ${new Date().toLocaleString()}`);
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error.message);
+    process.exit(1);
+  }
+};
+
+startServer();
+
+process.on('SIGTERM', () => { console.log('🛑 SIGTERM received.'); process.exit(0); });
+process.on('SIGINT', () => { console.log('🛑 SIGINT received.'); process.exit(0); });

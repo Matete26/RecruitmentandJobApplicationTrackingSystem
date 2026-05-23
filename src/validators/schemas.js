@@ -25,6 +25,20 @@ export const loginSchema = z.object({
 
 // ====================== JOB SCHEMAS ======================
 
+const jobTypeSchema = z.preprocess((val) => {
+  if (typeof val !== 'string') return val;
+  return val.trim().toLowerCase().replace(/\s+/g, '-');
+}, z.enum(['full-time', 'part-time', 'contract', 'internship', 'remote']));
+
+const salarySchema = z.union([
+  z.number().positive(),
+  z.object({
+    min: z.number().positive(),
+    max: z.number().positive().optional(),
+    currency: z.string().default('USD')
+  })
+]);
+
 export const createJobSchema = z.object({
   title: z.string().min(5, 'Job title must be at least 5 characters'),
   description: z.string().min(20, 'Description must be at least 20 characters'),
@@ -32,12 +46,8 @@ export const createJobSchema = z.object({
   responsibilities: z.array(z.string()).optional(),
   department: z.string().min(2),
   location: z.string().min(2),
-  type: z.enum(['full-time', 'part-time', 'contract', 'internship', 'remote']),
-  salary: z.object({
-    min: z.number().positive(),
-    max: z.number().positive().optional(),
-    currency: z.string().default('USD')
-  }).optional(),
+  type: jobTypeSchema,
+  salary: salarySchema.optional(),
   deadline: z.string().datetime().optional()
 });
 

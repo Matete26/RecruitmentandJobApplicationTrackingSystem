@@ -73,9 +73,13 @@ Base URL: `http://localhost:5000/api`
 ### Authentication
 
 - `POST /auth/register` - Register a new user
+  - Body: `{ name, email, password, passwordConfirm, role? }`
 - `POST /auth/login` - Login and receive JWT token
+  - Body: `{ email, password }`
+- `GET /auth/verify-email/:token` - Verify a new user email
 - `GET /auth/me` - Get current authenticated user
 - `PUT /auth/profile` - Update current user profile
+  - Body supports: `name`, `profile.phone`, `profile.location`, `profile.linkedin`, `profile.github`, `profile.skills`
 - `POST /auth/logout` - Logout current user
 
 ### Users
@@ -84,43 +88,57 @@ Base URL: `http://localhost:5000/api`
 - `GET /users/candidates` - Search candidate users
 - `GET /users/:id` - Get user by ID
 - `PUT /users/:id` - Update user (admin only)
+  - Body supports the same profile fields as `/auth/profile`
 - `PATCH /users/:id/status` - Toggle user active/inactive status (admin only)
+  - Body: `{ isActive: true | false }`
 
 ### Jobs
 
 - `GET /jobs` - Get all open jobs
 - `GET /jobs/:id` - Get job by ID
-- `POST /jobs` - Create job posting
+- `POST /jobs` - Create job posting (recruiter/hiring_manager/admin only)
+  - Body: `{ title, description, department, location, type, salary, requirements, responsibilities?, deadline? }`
+  - `type` can be `full-time | part-time | contract | internship | remote`
+  - `salary` may be a number or an object like `{ min, max?, currency? }`
 - `PUT /jobs/:id` - Update job posting
 - `DELETE /jobs/:id` - Delete job posting
 
 ### Applications
 
-- `POST /applications/jobs/:jobId/apply` - Apply to a job
+- `POST /applications/jobs/:jobId/apply` - Apply to a job (candidate only)
+  - Body: `{ coverLetter? }`
 - `GET /applications/my-applications` - Get current user's applications
-- `GET /applications` - Get all applications
+- `GET /applications` - Get all applications (recruiter/hiring_manager/admin only)
 - `GET /applications/:id` - Get application by ID
 - `PUT /applications/:id/status` - Update application status
+  - Body: `{ status }`
 - `POST /applications/:id/notes` - Add notes to an application
+  - Body: `{ note }`
 
 ### Interviews
 
 - `POST /interviews` - Schedule an interview
+  - Body: `{ applicationId, type, date, duration?, location, interviewers? }`
 - `GET /interviews` - Get all interviews
 - `GET /interviews/my-interviews` - Get candidate's interviews
 - `GET /interviews/:id` - Get interview by ID
 - `PUT /interviews/:id` - Update interview details
+  - Body: `{ date?, duration?, location? }`
 - `POST /interviews/:id/feedback` - Submit interview feedback
+  - Body: `{ rating, comments, strengths, weaknesses, interviewerId }`
 - `PATCH /interviews/:id/cancel` - Cancel interview
 - `PATCH /interviews/:id/reschedule` - Reschedule interview
+  - Body: `{ date, duration?, location? }`
 
 ### Offers
 
 - `POST /offers` - Create an offer
+  - Body: `{ applicationId, salary, currency?, startDate }`
 - `GET /offers` - Get all offers
 - `GET /offers/:id` - Get offer by ID
 - `PUT /offers/:id` - Update offer
 - `PATCH /offers/:id/status` - Update offer status
+  - Body: `{ status }`
 - `DELETE /offers/:id` - Withdraw offer
 
 ## Postman Collection

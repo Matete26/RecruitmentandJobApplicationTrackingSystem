@@ -3,83 +3,34 @@ import bcrypt from 'bcryptjs';
 
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
-  email: { 
-    type: String, 
-    required: true, 
-    unique: true, 
-    lowercase: true,
-    trim: true 
+  email: { type: String, required: true, unique: true, lowercase: true },
+  password: { type: String, required: true, select: false },
+  role: {
+    type: String,
+    enum: ['candidate', 'recruiter', 'hiring_manager', 'admin'],
+    default: 'candidate'
   },
-  password: { 
-    type: String, 
-    required: true, 
-    select: false,
-    minlength: 8 
-  },
-  role: { 
-    type: String, 
-    enum: ['candidate', 'recruiter', 'hiring_manager', 'admin'], 
-    default: 'candidate' 
-  },
-
-  // Email Verification
-  isEmailVerified: { 
-    type: Boolean, 
-    default: false 
-  },
+  isActive: { type: Boolean, default: true },
+  isEmailVerified: { type: Boolean, default: false },
   emailVerificationToken: String,
   emailVerificationExpires: Date,
-
-  // Password Reset
-  passwordResetToken: String,
-  passwordResetExpires: Date,
-
-  isActive: { 
-    type: Boolean, 
-    default: true 
-  },
-
-  // Candidate Profile
   profile: {
     phone: String,
     location: String,
     resume: String,
     linkedin: String,
-    github: String,
-    experienceYears: Number,
-    education: [{
-      degree: String,
-      institution: String,
-      year: Number
-    }],
-    skills: [String],
-    experience: [{
-      company: String,
-      position: String,
-      duration: String,
-      description: String
-    }]
+    experience: Number,
+    skills: [String]
   }
 }, { timestamps: true });
 
-// Password hashing middleware
-userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
+userSchema.pre('save', async function () {
+  if (!this.isModified('password')) return;
   this.password = await bcrypt.hash(this.password, 12);
-  next();
 });
 
-// Password comparison method
-userSchema.methods.comparePassword = async function(candidatePassword) {
+userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Generate email verification token (optional helper)
-userSchema.methods.generateEmailVerificationToken = function() {
-  const token = crypto.randomBytes(32).toString('hex');
-  this.emailVerificationToken = token;
-  this.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
-  return token;
-};
-
-export default mongoose.model('userSchema', userSchema);
+export default mongoose.model('User', userSchema);

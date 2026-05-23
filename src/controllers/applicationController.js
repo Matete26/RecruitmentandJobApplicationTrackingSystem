@@ -1,259 +1,96 @@
-import Application from '../models/applicationModel.js';
-import Job from '../models/jobModel.js';
+import applicationService from '../services/applicationService.js';
 import { AppError } from '../middleware/errorMiddleware.js';
 
 /**
  * Apply for a job
  */
-export const applyJob = async (req, res) => {
+export const applyJob = async (req, res, next) => {
   try {
     const { jobId } = req.params;
     const { coverLetter } = req.body;
-
-    // Check if job exists and is open
-    const job = await Job.findById(jobId);
-    if (!job) {
-      throw new AppError('Job not found', 404);
-    }
-
-    if (job.status !== 'open') {
-      throw new AppError('This job is no longer accepting applications', 400);
-    }
-
-    // Check if candidate already applied
-    const existingApplication = await Application.findOne({
-      job: jobId,
-      candidate: req.user.id
-    });
-
-    if (existingApplication) {
-      throw new AppError('You have already applied for this job', 400);
-    }
-
-    const application = await Application.create({
-      job: jobId,
-      candidate: req.user.id,
-      coverLetter,
-      resume: req.user.profile?.resume,
-      status: 'applied'
-    });
-
-    // Increment applicant count
-    await Job.findByIdAndUpdate(jobId, { $inc: { applicantsCount: 1 } });
-
-    const populatedApplication = await Application.findById(application._id)
-      .populate('job', 'title department location')
-      .populate('candidate', 'name email');
-
-    res.status(201).json({
-      success: true,
-      message: 'Application submitted successfully',
-      data: populatedApplication
-    });
+    const resume = req.user.profile?.resume;
+    const application = await applicationService.applyToJob({ jobId, candidateId: req.user._id || req.user.id, coverLetter, resume });
+    res.status(201).json({ success: true, message: 'Application submitted successfully', data: application });
   } catch (error) {
-    res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.message || 'Error submitting application'
-    });
+    next(error);
   }
 };
 
 /**
  * Get all applications (For recruiters and hiring managers)
  */
-export const getApplications = async (req, res) => {
+export const getApplications = async (req, res, next) => {
   try {
-    const { status, jobId, page = 1, limit = 20 } = req.query;
-
-    const query = {};
-    if (status) query.status = status;
-    if (jobId) query.job = jobId;
-
-    const applications = await Application.find(query)
-      .populate('candidate', 'name email profile')
-      .populate('job', 'title department location')
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit))
-      .sort({ createdAt: -1 });
-
-    const total = await Application.countDocuments(query);
-
-    res.json({
-      success: true,
-      count: applications.length,
-      total,
-      totalPages: Math.ceil(total / limit),
-      currentPage: parseInt(page),
-      data: applications
-    });
+    const result = await applicationService.queryApplications({ queryParams: req.query });
+    res.json({ success: true, count: result.applications.length, total: result.total, totalPages: Math.ceil(result.total / result.limit), currentPage: result.page, data: result.applications });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching applications',
-      error: error.message
-    });
+    next(error);
   }
 };
 
 /**
  * Get candidate's own applications
  */
-export const getMyApplications = async (req, res) => {
+export const getMyApplications = async (req, res, next) => {
   try {
-    const applications = await Application.find({ candidate: req.user.id })
-      .populate('job', 'title department location status')
-      .sort({ createdAt: -1 });
-
-    res.json({
-      success: true,
-      count: applications.length,
-      data: applications
-    });
+    const applications = await applicationService.getApplicationsByCandidate(req.user._id || req.user.id);
+    res.json({ success: true, count: applications.length, data: applications });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching your applications',
-      error: error.message
-    });
+    next(error);
   }
 };
 
 /**
  * Get single application by ID
  */
-export const getApplicationById = async (req, res) => {
+export const getApplicationById = async (req, res, next) => {
   try {
-    const application = await Application.findById(req.params.id)
-      .populate('candidate', 'name email profile')
-      .populate('job', 'title department location postedBy')
-      .populate('notes.addedBy', 'name');
-
-    if (!application) {
-      throw new AppError('Application not found', 404);
-    }
-
+    const application = await applicationService.getApplicationById(req.params.id);
     // Candidates can only view their own applications
-    if (req.user.role === 'candidate' && application.candidate._id.toString() !== req.user.id) {
+    if (req.user.role === 'candidate' && application.candidate._id.toString() !== (req.user._id || req.user.id).toString()) {
       throw new AppError('Access denied', 403);
     }
-
-    res.json({
-      success: true,
-      data: application
-    });
+    res.json({ success: true, data: application });
   } catch (error) {
-    res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.message
-    });
+    next(error);
   }
 };
 
 /**
  * Update application status (Recruiter only)
  */
-export const updateApplicationStatus = async (req, res) => {
+export const updateApplicationStatus = async (req, res, next) => {
   try {
     const { status } = req.body;
-
-    const application = await Application.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true, runValidators: true }
-    )
-    .populate('candidate', 'name email')
-    .populate('job', 'title');
-
-    if (!application) {
-      throw new AppError('Application not found', 404);
-    }
-
-    res.json({
-      success: true,
-      message: `Application status updated to ${status}`,
-      data: application
-    });
+    const application = await applicationService.updateApplicationStatus(req.params.id, status);
+    res.json({ success: true, message: `Application status updated to ${status}`, data: application });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error updating application status',
-      error: error.message
-    });
+    next(error);
   }
 };
 
 /**
  * Add note/feedback to application
  */
-export const addNote = async (req, res) => {
+export const addNote = async (req, res, next) => {
   try {
     const { text } = req.body;
-
-    if (!text) {
-      throw new AppError('Note text is required', 400);
-    }
-
-    const application = await Application.findByIdAndUpdate(
-      req.params.id,
-      {
-        $push: {
-          notes: {
-            text,
-            addedBy: req.user.id
-          }
-        }
-      },
-      { new: true }
-    ).populate('notes.addedBy', 'name');
-
-    if (!application) {
-      throw new AppError('Application not found', 404);
-    }
-
-    res.json({
-      success: true,
-      message: 'Note added successfully',
-      data: application
-    });
+    const application = await applicationService.addApplicationNote(req.params.id, text, req.user._id || req.user.id);
+    res.json({ success: true, message: 'Note added successfully', data: application });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error adding note',
-      error: error.message
-    });
+    next(error);
   }
 };
 
 /**
  * Withdraw application (Candidate only)
  */
-export const withdrawApplication = async (req, res) => {
+export const withdrawApplication = async (req, res, next) => {
   try {
-    const application = await Application.findOne({
-      _id: req.params.id,
-      candidate: req.user.id
-    });
-
-    if (!application) {
-      throw new AppError('Application not found or access denied', 404);
-    }
-
-    if (application.status === 'hired') {
-      throw new AppError('Cannot withdraw a hired application', 400);
-    }
-
-    application.status = 'withdrawn';
-    await application.save();
-
-    res.json({
-      success: true,
-      message: 'Application withdrawn successfully'
-    });
+    await applicationService.withdrawApplication(req.params.id, req.user._id || req.user.id);
+    res.json({ success: true, message: 'Application withdrawn successfully' });
   } catch (error) {
-    res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.message
-    });
+    next(error);
   }
 };
 
