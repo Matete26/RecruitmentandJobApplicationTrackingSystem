@@ -65,7 +65,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123!\",\n  \"phone\": \"+1234567890\",\n  \"role\": \"candidate\"\n}"
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Password123!\",\n  \"passwordConfirm\": \"Password123!\",\n  \"role\": \"candidate\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/auth/register",
@@ -79,6 +79,27 @@
               ]
             },
             "description": "Register a new user. Roles: candidate, recruiter, hiring_manager, admin"
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Email",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/verify-email/{{verificationToken}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "verify-email",
+                "{{verificationToken}}"
+              ]
+            },
+            "description": "Verify a newly registered user's email with the token from the verification email"
           },
           "response": []
         },
@@ -156,7 +177,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstName\": \"Jane\",\n  \"lastName\": \"Smith\",\n  \"phone\": \"+1987654321\",\n  \"bio\": \"Updated bio\"\n}"
+              "raw": "{\n  \"name\": \"Jane Smith\",\n  \"profile.phone\": \"+1987654321\",\n  \"profile.location\": \"Seattle, WA\",\n  \"profile.linkedin\": \"https://linkedin.com/in/janesmith\",\n  \"profile.skills\": [\"Recruiting\", \"Interviewing\"]\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/auth/profile",
@@ -300,7 +321,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstName\": \"Updated\",\n  \"lastName\": \"Name\",\n  \"email\": \"updated@example.com\",\n  \"phone\": \"+9876543210\"\n}"
+              "raw": "{\n  \"name\": \"Updated Name\",\n  \"profile.phone\": \"+9876543210\",\n  \"profile.location\": \"San Francisco, CA\",\n  \"profile.linkedin\": \"https://linkedin.com/in/updated\",\n  \"profile.skills\": [\"HR\", \"Sourcing\"]\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/users/{{userId}}",
@@ -335,7 +356,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"status\": \"inactive\"\n}"
+              "raw": "{\n  \"isActive\": false\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/users/{{userId}}/status",
@@ -416,7 +437,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Senior Software Engineer\",\n  \"description\": \"We are looking for an experienced software engineer\",\n  \"location\": \"New York, NY\",\n  \"department\": \"Engineering\",\n  \"salary\": 120000,\n  \"salaryMax\": 150000,\n  \"jobType\": \"Full-Time\",\n  \"experienceLevel\": \"Senior\",\n  \"requiredSkills\": [\"JavaScript\", \"React\", \"Node.js\"],\n  \"responsibilities\": [\"Design and develop features\", \"Code review\"],\n  \"requirements\": [\"5+ years experience\", \"BS in Computer Science\"],\n  \"benefits\": [\"Health Insurance\", \"401k\", \"Flexible Hours\"],\n  \"status\": \"open\"\n}"
+              "raw": "{\n  \"title\": \"Senior Software Engineer\",\n  \"description\": \"We are looking for an experienced software engineer to join our team.\",\n  \"location\": \"New York, NY\",\n  \"department\": \"Engineering\",\n  \"type\": \"full-time\",\n  \"salary\": {\n    \"min\": 120000,\n    \"max\": 150000,\n    \"currency\": \"USD\"\n  },\n  \"deadline\": \"2026-12-31T23:59:59Z\",\n  \"requirements\": [\"5+ years of experience in software development\", \"Proficiency with JavaScript and Node.js\"],\n  \"responsibilities\": [\"Design and develop features\", \"Participate in code reviews\"]\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/jobs",
@@ -517,7 +538,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"coverLetter\": \"I am interested in this position...\",\n  \"resume\": \"Link or ID to resume\"\n}"
+              "raw": "{\n  \"coverLetter\": \"I am interested in this position and believe my skills are an excellent fit.\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/applications/jobs/{{jobId}}/apply",
@@ -709,7 +730,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"applicationId\": \"{{applicationId}}\",\n  \"candidateId\": \"{{candidateId}}\",\n  \"interviewerIds\": [\"{{recruiterId}}\"],\n  \"scheduledDate\": \"2024-06-15\",\n  \"scheduledTime\": \"10:00\",\n  \"location\": \"Conference Room A\",\n  \"interviewType\": \"technical\",\n  \"description\": \"Technical interview for SWE position\"\n}"
+              "raw": "{\n  \"applicationId\": \"{{applicationId}}\",\n  \"type\": \"technical\",\n  \"date\": \"2026-06-15T10:00:00Z\",\n  \"duration\": 60,\n  \"location\": \"Conference Room A\",\n  \"interviewers\": [\"{{recruiterId}}\"]\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/interviews",
@@ -820,7 +841,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"scheduledTime\": \"14:00\",\n  \"location\": \"Conference Room B\",\n  \"description\": \"Updated interview details\"\n}"
+              "raw": "{\n  \"date\": \"2026-06-16T14:00:00Z\",\n  \"duration\": 90,\n  \"location\": \"Conference Room B\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/interviews/{{interviewId}}",
@@ -855,7 +876,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"rating\": 4,\n  \"feedback\": \"Excellent technical knowledge. Strong problem-solving skills.\",\n  \"recommendation\": \"move_to_next_round\"\n}"
+              "raw": "{\n  \"rating\": 4,\n  \"comments\": \"Excellent technical knowledge. Strong problem-solving skills.\",\n  \"strengths\": \"Clear communication and problem solving\",\n  \"weaknesses\": \"Needs more backend architecture experience\",\n  \"interviewerId\": \"{{recruiterId}}\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/interviews/{{interviewId}}/feedback",
@@ -927,7 +948,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"scheduledDate\": \"2024-06-20\",\n  \"scheduledTime\": \"11:00\",\n  \"reason\": \"Candidate requested reschedule\"\n}"
+              "raw": "{\n  \"date\": \"2026-06-20T11:00:00Z\",\n  \"duration\": 60,\n  \"location\": \"Conference Room C\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/interviews/{{interviewId}}/reschedule",
@@ -969,7 +990,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"candidateId\": \"{{candidateId}}\",\n  \"jobId\": \"{{jobId}}\",\n  \"salary\": 120000,\n  \"benefits\": [\"Health Insurance\", \"401k\", \"Remote Work\"],\n  \"startDate\": \"2024-07-01\",\n  \"position\": \"Senior Software Engineer\",\n  \"department\": \"Engineering\",\n  \"reportingTo\": \"Engineering Manager\",\n  \"expiryDate\": \"2024-06-30\"\n}"
+              "raw": "{\n  \"applicationId\": \"{{applicationId}}\",\n  \"salary\": 120000,\n  \"currency\": \"USD\",\n  \"startDate\": \"2026-07-01T00:00:00Z\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/offers",
