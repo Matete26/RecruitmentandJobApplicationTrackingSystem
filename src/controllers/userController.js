@@ -1,195 +1,63 @@
-import User from '../models/userModel.js';
+import userService from '../services/userService.js';
 
 /**
  * Get all users / candidates with filtering and pagination
  */
-export const getUsers = async (req, res) => {
+export const getUsers = async (req, res, next) => {
   try {
-    const { 
-      role, 
-      page = 1, 
-      limit = 20, 
-      search, 
-      skills 
-    } = req.query;
-
-    const query = {};
-
-    if (role) query.role = role;
-    if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { email: { $regex: search, $options: 'i' } }
-      ];
-    }
-    if (skills) {
-      query['profile.skills'] = { $in: skills.split(',') };
-    }
-
-    const users = await User.find(query)
-      .select('-password')
-      .skip((page - 1) * limit)
-      .limit(parseInt(limit))
-      .sort({ createdAt: -1 });
-
-    const total = await User.countDocuments(query);
-
-    res.json({
-      success: true,
-      count: users.length,
-      total,
-      totalPages: Math.ceil(total / limit),
-      currentPage: parseInt(page),
-      data: users
-    });
+    const result = await userService.queryUsers({ queryParams: req.query });
+    res.json({ success: true, count: result.users.length, total: result.total, totalPages: Math.ceil(result.total / result.limit), currentPage: result.page, data: result.users });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching users',
-      error: error.message
-    });
+    next(error);
   }
 };
 
 /**
  * Get single user by ID (Detailed profile)
  */
-export const getUserById = async (req, res) => {
+export const getUserById = async (req, res, next) => {
   try {
-    const user = await User.findById(req.params.id).select('-password');
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
-
-    res.json({
-      success: true,
-      data: user
-    });
+    const user = await userService.getUserById(req.params.id);
+    res.json({ success: true, data: user });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error fetching user',
-      error: error.message
-    });
+    next(error);
   }
 };
 
 /**
  * Update user (Admin / Recruiter only)
  */
-export const updateUser = async (req, res) => {
+export const updateUser = async (req, res, next) => {
   try {
-    const { role, isActive, ...profileUpdates } = req.body;
-
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      {
-        role,
-        isActive,
-        ...profileUpdates
-      },
-      { new: true, runValidators: true }
-    ).select('-password');
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
-
-    res.json({
-      success: true,
-      message: 'User updated successfully',
-      data: user
-    });
+    const user = await userService.updateUser(req.params.id, req.body);
+    res.json({ success: true, message: 'User updated successfully', data: user });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error updating user',
-      error: error.message
-    });
+    next(error);
   }
 };
 
 /**
  * Deactivate / Activate user
  */
-export const toggleUserStatus = async (req, res) => {
+export const toggleUserStatus = async (req, res, next) => {
   try {
     const { isActive } = req.body;
-
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      { isActive },
-      { new: true }
-    ).select('-password');
-
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: 'User not found'
-      });
-    }
-
-    res.json({
-      success: true,
-      message: `User ${isActive ? 'activated' : 'deactivated'} successfully`,
-      data: user
-    });
+    const user = await userService.toggleUserStatus(req.params.id, isActive);
+    res.json({ success: true, message: `User ${isActive ? 'activated' : 'deactivated'} successfully`, data: user });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error updating user status',
-      error: error.message
-    });
+    next(error);
   }
 };
 
 /**
  * Search candidates (Optimized for recruiters)
  */
-export const searchCandidates = async (req, res) => {
+export const searchCandidates = async (req, res, next) => {
   try {
-    const { skills, experienceMin, location, search } = req.query;
-
-    const query = { role: 'candidate' };
-
-    if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { 'profile.skills': { $regex: search, $options: 'i' } }
-      ];
-    }
-    if (skills) {
-      query['profile.skills'] = { $all: skills.split(',') };
-    }
-    if (experienceMin) {
-      query['profile.experienceYears'] = { $gte: parseInt(experienceMin) };
-    }
-    if (location) {
-      query['profile.location'] = { $regex: location, $options: 'i' };
-    }
-
-    const candidates = await User.find(query)
-      .select('-password')
-      .sort({ 'profile.experienceYears': -1 });
-
-    res.json({
-      success: true,
-      count: candidates.length,
-      data: candidates
-    });
+    const candidates = await userService.searchCandidates({ queryParams: req.query });
+    res.json({ success: true, count: candidates.length, data: candidates });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: 'Error searching candidates',
-      error: error.message
-    });
+    next(error);
   }
 };
 

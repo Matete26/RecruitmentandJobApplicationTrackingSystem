@@ -2,6 +2,8 @@ import { Router } from 'express';
 import * as interviewController from '../controllers/interviewController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { authorize } from '../middleware/roleMiddleware.js';
+import { validate } from '../middleware/validationMiddleware.js';
+import { scheduleInterviewSchema, idParamSchema } from '../validators/schemas.js';
 
 const router = Router();
 
@@ -12,6 +14,7 @@ router.post(
   '/',
   protect,
   authorize('recruiter', 'hiring_manager', 'admin'),
+  validate(scheduleInterviewSchema),
   interviewController.scheduleInterview
 );
 
@@ -35,6 +38,7 @@ router.get(
 router.get(
   '/:id',
   protect,
+  validate(idParamSchema, { params: true }),
   interviewController.getInterviewById
 );
 
@@ -43,6 +47,7 @@ router.put(
   '/:id',
   protect,
   authorize('recruiter', 'hiring_manager', 'admin'),
+  validate(idParamSchema, { params: true }),
   interviewController.updateInterview
 );
 
@@ -51,6 +56,7 @@ router.post(
   '/:id/feedback',
   protect,
   authorize('recruiter', 'hiring_manager', 'admin'),
+  validate(idParamSchema, { params: true }),
   interviewController.submitFeedback
 );
 
@@ -59,6 +65,7 @@ router.patch(
   '/:id/cancel',
   protect,
   authorize('recruiter', 'hiring_manager', 'admin'),
+  validate(idParamSchema, { params: true }),
   interviewController.cancelInterview
 );
 
@@ -67,6 +74,7 @@ router.patch(
   '/:id/reschedule',
   protect,
   authorize('recruiter', 'hiring_manager', 'admin'),
+  validate(idParamSchema, { params: true }),
   interviewController.rescheduleInterview
 );
 

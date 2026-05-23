@@ -1,5 +1,7 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
+import { AppError } from './errorMiddleware.js';
+import { verifyToken } from '../utils/jwt.js';
 
 /**
  * Protect routes - Verify JWT Token
@@ -14,34 +16,24 @@ export const protect = async (req, res, next) => {
 
   // Check if token exists
   if (!token) {
-    return res.status(401).json({
-      success: false,
-      message: 'Not authorized. No token provided.'
-    });
+    return next(new AppError('Not authorized. No token provided.', 401));
   }
 
   try {
-    // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Verify token (centralized)
+    const decoded = verifyToken(token);
 
-    // Attach user info to request object
-    req.user = decoded; // Contains { id, role }
+    // Fetch full user from DB (exclude password)
+    const user = await User.findById(decoded.id).select('-password');
+    if (!user) return next(new AppError('User belonging to token no longer exists', 401));
+
+    // Attach full user to request
+    req.user = user;
 
     next();
   } catch (error) {
-    console.error('JWT Verification Error:', error.message);
-    
-    if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({
-        success: false,
-        message: 'Token expired. Please login again.'
-      });
-    }
-
-    return res.status(401).json({
-      success: false,
-      message: 'Invalid token. Please login again.'
-    });
+    // Token errors handled by global error middleware
+    return next(error.name === 'TokenExpiredError' ? new AppError('Token expired. Please login again.', 401) : new AppError('Invalid token. Please login again.', 401));
   }
 };
 
@@ -51,20 +43,8 @@ export const protect = async (req, res, next) => {
  */
 export const authorize = (...allowedRoles) => {
   return (req, res, next) => {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Not authorized'
-      });
-    }
-
-    if (!allowedRoles.includes(req.user.role)) {
-      return res.status(403).json({
-        success: false,
-        message: `Access denied. Required role(s): ${allowedRoles.join(', ')}`
-      });
-    }
-
+    if (!req.user) return next(new AppError('Not authorized', 401));
+    if (!allowedRoles.includes(req.user.role)) return next(new AppError(`Access denied. Required role(s): ${allowedRoles.join(', ')}`, 403));
     next();
   };
 };
@@ -73,21 +53,29 @@ export const authorize = (...allowedRoles) => {
  * Optional: Check if user is the owner of a resource (for candidate-specific actions)
  * Example: Only allow a candidate to view/update their own application
  */
-export const isOwner = (resourceField = 'candidate') => {
-  return (req, res, next) => {
-    if (req.user.role === 'admin' || req.user.role === 'recruiter') {
-      return next(); // Admins and recruiters can access everything
-    }
+export const isOwner = ({ Model, resourceIdParam = 'id', ownerField = 'candidate' } = {}) => {
+  return async (req, res, next) => {
+    // Admins and recruiters bypass ownership checks
+    if (req.user && (req.user.role === 'admin' || req.user.role === 'recruiter')) return next();
 
-    // For candidates, check ownership
-    if (req.params.id && req.body[resourceField] !== req.user.id) {
-      return res.status(403).json({
-        success: false,
-        message: 'You can only access your own resources'
-      });
-    }
+    const resourceId = req.params[resourceIdParam] || req.body[resourceIdParam];
+    if (!resourceId) return next(new AppError('Resource id not provided for ownership check', 400));
 
-    next();
+    if (!Model) return next(new AppError('Ownership check requires a Model to be provided', 500));
+
+    try {
+      const resource = await Model.findById(resourceId).select(ownerField);
+      if (!resource) return next(new AppError('Resource not found', 404));
+
+      const ownerId = resource[ownerField] && resource[ownerField].toString ? resource[ownerField].toString() : String(resource[ownerField]);
+      const userId = req.user._id ? req.user._id.toString() : String(req.user.id || req.user._id);
+
+      if (ownerId !== userId) return next(new AppError('You can only access your own resources', 403));
+
+      next();
+    } catch (err) {
+      next(err);
+    }
   };
 };
 

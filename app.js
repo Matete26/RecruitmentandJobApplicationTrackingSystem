@@ -102,5 +102,3 @@ process.on('SIGINT', () => {
 
 export default app;
 
-// Start the server (uncomment if running directly)
-startServer();
