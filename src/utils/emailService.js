@@ -1,20 +1,35 @@
 import nodemailer from 'nodemailer';
 import { emailTemplates } from '../templates/emailTemplates.js';
 
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: parseInt(process.env.EMAIL_PORT || '587', 10),
-  secure: process.env.EMAIL_SECURE === 'true',
-  service: process.env.EMAIL_SERVICE || undefined,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS || process.env.EMAIL_PASSWORD,
-  },
-});
+// ✅ Lazy — created on first use, after dotenv has loaded
+let transporter = null;
 
-/**
- * Core send function
- */
+const getTransporter = () => {
+  if (transporter) return transporter;
+
+    transporter = nodemailer.createTransport(
+    process.env.EMAIL_SERVICE
+      ? {
+          service: process.env.EMAIL_SERVICE,
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASSWORD,
+          },
+        }
+      : {
+          host: process.env.EMAIL_HOST,
+          port: parseInt(process.env.EMAIL_PORT || '587', 10),
+          secure: process.env.EMAIL_SECURE === 'true',
+          auth: {
+            user: process.env.EMAIL_USER,
+            pass: process.env.EMAIL_PASSWORD,
+          },
+        }
+  );
+
+  return transporter;
+};
+
 export const sendEmail = async ({ to, subject, templateName, templateData }) => {
   try {
     const htmlContent = emailTemplates[templateName](...Object.values(templateData));
@@ -26,7 +41,7 @@ export const sendEmail = async ({ to, subject, templateName, templateData }) => 
       html: htmlContent,
     };
 
-    const info = await transporter.sendMail(mailOptions);
+    const info = await getTransporter().sendMail(mailOptions);
     console.log(`✅ Email sent: ${info.messageId}`);
     return info;
   } catch (error) {
@@ -35,9 +50,8 @@ export const sendEmail = async ({ to, subject, templateName, templateData }) => 
   }
 };
 
-// Convenience functions
 export const sendVerificationEmail = (email, name, token) => {
-  const verificationUrl = `${process.env.FRONTEND_URL || process.env.APP_URL || 'http://localhost:3000'}/verify-email/${token}`;
+  const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email/${token}`;
   return sendEmail({
     to: email,
     subject: 'Verify Your Email Address - ATS Platform',
@@ -47,7 +61,7 @@ export const sendVerificationEmail = (email, name, token) => {
 };
 
 export const sendPasswordResetEmail = (email, name, token) => {
-  const resetUrl = `${process.env.FRONTEND_URL || process.env.APP_URL || 'http://localhost:3000'}/reset-password/${token}`;
+  const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password/${token}`;
   return sendEmail({
     to: email,
     subject: 'Reset Your Password',
@@ -56,8 +70,4 @@ export const sendPasswordResetEmail = (email, name, token) => {
   });
 };
 
-export default {
-  sendEmail,
-  sendVerificationEmail,
-  sendPasswordResetEmail,
-};
+export default { sendEmail, sendVerificationEmail, sendPasswordResetEmail };

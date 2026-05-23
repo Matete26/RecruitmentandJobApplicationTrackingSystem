@@ -57,11 +57,31 @@ export const register = async (req, res, next) => {
 /**
  * Verify Email
  */
-export const verifyEmail = async (req, res) => {
+export const verifyEmail = async (req, res, next) => {
   try {
     const { token } = req.params;
-    await authService.verifyEmailToken(token);
-    res.json({ success: true, message: 'Email verified successfully. You can now login.' });
+
+    const user = await User.findOne({
+      verificationToken: token,
+      verificationTokenExpiry: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid or expired verification token'
+      });
+    }
+
+    user.isVerified = true;
+    user.verificationToken = undefined;
+    user.verificationTokenExpiry = undefined;
+    await user.save();
+
+    res.json({
+      success: true,
+      message: 'Email verified successfully. You can now log in.'
+    });
   } catch (error) {
     next(error);
   }

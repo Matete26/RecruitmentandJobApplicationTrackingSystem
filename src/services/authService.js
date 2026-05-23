@@ -25,11 +25,13 @@ export const registerUser = async ({ name, email, password, role }, { UserModel 
   await user.save({ validateBeforeSave: false });
 
   // Send verification email best-effort
-  try {
-    await sendEmail(user.email, verificationToken, user.name);
-  } catch (err) {
-    console.warn('sendVerificationEmail error:', err && err.message ? err.message : err);
-  }
+  // Don't let email failure break registration
+try {
+  await sendVerificationEmail(user.email, user.name, verificationToken);
+} catch (emailError) {
+  console.error('sendVerificationEmail error:', emailError.message);
+  // Continue — user is created, email can be resent later
+}
 
   const token = signToken({ id: user._id, role: user.role });
 
@@ -64,9 +66,9 @@ export const resendVerification = async (email, { UserModel = User, sendEmail = 
   await user.save({ validateBeforeSave: false });
 
   try {
-    await sendEmail(user.email, verificationToken, user.name);
-  } catch (err) {
-    console.warn('sendVerificationEmail error:', err && err.message ? err.message : err);
+    await sendVerificationEmail(user.email, user.name, verificationToken);
+  } catch (emailError) {
+    console.error('sendVerificationEmail error:', emailError.message);
   }
 
   return true;
