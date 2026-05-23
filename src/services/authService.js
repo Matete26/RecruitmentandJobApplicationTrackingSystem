@@ -15,6 +15,7 @@ export const registerUser = async ({ name, email, password, role }, { UserModel 
     email: email.toLowerCase(),
     password,
     role: role || 'candidate',
+    isActive: true,
     isEmailVerified: false
   });
 

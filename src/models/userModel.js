@@ -10,6 +10,10 @@ const userSchema = new mongoose.Schema({
     enum: ['candidate', 'recruiter', 'hiring_manager', 'admin'],
     default: 'candidate'
   },
+  isActive: { type: Boolean, default: true },
+  isEmailVerified: { type: Boolean, default: false },
+  emailVerificationToken: String,
+  emailVerificationExpires: Date,
   profile: {
     phone: String,
     location: String,

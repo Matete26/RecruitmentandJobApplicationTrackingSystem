@@ -6,7 +6,15 @@ import { AppError } from '../middleware/errorMiddleware.js';
  */
 export const createJob = async (req, res, next) => {
   try {
-    const created = await jobService.createJob({ body: req.body, user: req.user });
+    const body = { ...req.body };
+    if (typeof body.salary === 'number') {
+      body.salary = { min: body.salary, currency: 'USD' };
+    }
+    if (typeof body.salary === 'string' && !Number.isNaN(Number(body.salary))) {
+      body.salary = { min: Number(body.salary), currency: 'USD' };
+    }
+
+    const created = await jobService.createJob({ body, user: req.user });
     res.status(201).json({ success: true, message: 'Job posted successfully', data: created });
   } catch (error) {
     next(error);

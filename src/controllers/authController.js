@@ -1,6 +1,4 @@
-import User from '../models/userModel.js';
 import { AppError } from '../middleware/errorMiddleware.js';
-import crypto from 'crypto';
 import authService from '../services/authService.js';
 
 /**
@@ -60,23 +58,7 @@ export const register = async (req, res, next) => {
 export const verifyEmail = async (req, res, next) => {
   try {
     const { token } = req.params;
-
-    const user = await User.findOne({
-      verificationToken: token,
-      verificationTokenExpiry: { $gt: Date.now() }
-    });
-
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid or expired verification token'
-      });
-    }
-
-    user.isVerified = true;
-    user.verificationToken = undefined;
-    user.verificationTokenExpiry = undefined;
-    await user.save();
+    await authService.verifyEmailToken(token);
 
     res.json({
       success: true,
@@ -90,7 +72,7 @@ export const verifyEmail = async (req, res, next) => {
 /**
  * Login user (Only verified emails allowed)
  */
-export const login = async (req, res) => {
+export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
     const { user, token } = await authService.loginUser({ email, password });
@@ -104,7 +86,7 @@ export const login = async (req, res) => {
 /**
  * Resend Verification Email
  */
-export const resendVerification = async (req, res) => {
+export const resendVerification = async (req, res, next) => {
   try {
     const { email } = req.body;
     await authService.resendVerification(email);
