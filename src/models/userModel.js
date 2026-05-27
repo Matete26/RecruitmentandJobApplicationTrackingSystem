@@ -38,4 +38,11 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
+// Check if user changed password after JWT was issued
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+  if (!this.passwordChangedAt) return false;
+  const changedTimestamp = parseInt(new Date(this.passwordChangedAt).getTime() / 1000, 10);
+  return JWTTimestamp < changedTimestamp;
+};
+
 export default mongoose.model('User', userSchema);
