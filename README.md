@@ -145,6 +145,10 @@ Base URL: `http://localhost:5000/api`
 
 A Postman collection is included at `JobTracking_ATS_API.postman_collection.json`.
 
+## API Documentation
+
+Detailed API documentation is available in `API_DOCUMENTATION.md`.
+
 ## Project Structure
 
 - `app.js` - Main Express app configuration

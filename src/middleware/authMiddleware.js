@@ -26,6 +26,7 @@ export const protect = async (req, res, next) => {
     // Fetch full user from DB (exclude password)
     const user = await User.findById(decoded.id).select('-password');
     if (!user) return next(new AppError('User belonging to token no longer exists', 401));
+    if (user.changedPasswordAfter(decoded.iat)) return next(new AppError('User recently changed password. Please login again.', 401));
 
     // Attach full user to request
     req.user = user;

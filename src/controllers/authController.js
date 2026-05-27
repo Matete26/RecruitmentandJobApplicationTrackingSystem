@@ -1,4 +1,5 @@
 import { AppError } from '../middleware/errorMiddleware.js';
+import User from '../models/userModel.js';
 import authService from '../services/authService.js';
 
 /**
@@ -75,9 +76,34 @@ export const verifyEmail = async (req, res, next) => {
 export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
-    const { user, token } = await authService.loginUser({ email, password });
+    const { user, token, refreshToken } = await authService.loginUser({ email, password });
     const userResponse = { id: user._id, name: user.name, email: user.email, role: user.role, isEmailVerified: user.isEmailVerified };
-    res.status(200).json({ success: true, message: 'Login successful', token, user: userResponse });
+
+    res.status(200).json({
+      success: true,
+      message: 'Login successful',
+      token,
+      refreshToken,
+      user: userResponse
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const refreshToken = async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+    const { user, token, refreshToken: newRefreshToken } = await authService.refreshAuthToken(refreshToken);
+    const userResponse = { id: user._id, name: user.name, email: user.email, role: user.role, isEmailVerified: user.isEmailVerified };
+
+    res.json({
+      success: true,
+      message: 'Access token refreshed',
+      token,
+      refreshToken: newRefreshToken,
+      user: userResponse
+    });
   } catch (error) {
     next(error);
   }
@@ -96,6 +122,36 @@ export const resendVerification = async (req, res, next) => {
   }
 };
 
+export const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    await authService.forgotPassword(email);
+    res.json({ success: true, message: 'Password reset email sent if the account exists' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPassword = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    const { password, passwordConfirm } = req.body;
+
+    const { user, token: jwtToken, refreshToken } = await authService.resetPassword(token, password, passwordConfirm);
+    const userResponse = { id: user._id, name: user.name, email: user.email, role: user.role, isEmailVerified: user.isEmailVerified };
+
+    res.json({
+      success: true,
+      message: 'Password reset successful',
+      token: jwtToken,
+      refreshToken,
+      user: userResponse
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Keep other methods
 export const getMe = async (req, res, next) => {
   try {
@@ -107,11 +163,16 @@ export const getMe = async (req, res, next) => {
   }
 };
 
-export const logout = async (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Logged out successfully'
-  });
+export const logout = async (req, res, next) => {
+  try {
+    await authService.logoutUser(req.user._id);
+    res.status(200).json({
+      success: true,
+      message: 'Logged out successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
 };
 
 export const updateProfile = async (req, res, next) => {
@@ -139,4 +200,4 @@ export const updateProfile = async (req, res, next) => {
   }
 };
 
-export default { register, login, getMe, logout, updateProfile, verifyEmail, resendVerification };
+export default { register, login, refreshToken, getMe, logout, updateProfile, verifyEmail, resendVerification, forgotPassword, resetPassword };

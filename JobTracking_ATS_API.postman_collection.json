@@ -129,7 +129,98 @@
                 "login"
               ]
             },
-            "description": "Login with email and password. Returns JWT token in response."
+            "description": "Login with email and password. Returns JWT token and refresh token in response."
+          },
+          "response": []
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/forgot-password",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "forgot-password"
+              ]
+            },
+            "description": "Request a password reset email. If the account exists, a reset token link will be sent."
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"NewPassword123!\",\n  \"passwordConfirm\": \"NewPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/reset-password/{{resetToken}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "reset-password",
+                "{{resetToken}}"
+              ]
+            },
+            "description": "Reset the password using the token received by email. Returns new access token and refresh token."
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/refresh-token",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "refresh-token"
+              ]
+            },
+            "description": "Exchange a refresh token for a new access token and rotated refresh token."
           },
           "response": []
         },
