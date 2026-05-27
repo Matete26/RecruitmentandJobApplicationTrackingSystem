@@ -1,4 +1,3 @@
-import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
 import { AppError } from './errorMiddleware.js';
 import { verifyToken } from '../utils/jwt.js';
@@ -9,9 +8,17 @@ import { verifyToken } from '../utils/jwt.js';
 export const protect = async (req, res, next) => {
   let token;
 
-  // Check for token in Authorization header
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    token = req.headers.authorization.split(' ')[1];
+  // Check for token in Authorization header (case-insensitive)
+  if (req.headers.authorization) {
+    const parts = req.headers.authorization.split(' ').filter(Boolean);
+    if (parts.length === 2 && parts[0].toLowerCase() === 'bearer') {
+      token = parts[1];
+    }
+  }
+
+  // Fallbacks: allow token in query string (e.g. ?token=...) for some clients
+  if (!token && req.query && req.query.token) {
+    token = req.query.token;
   }
 
   // Check if token exists
@@ -33,8 +40,25 @@ export const protect = async (req, res, next) => {
 
     next();
   } catch (error) {
-    // Token errors handled by global error middleware
-    return next(error.name === 'TokenExpiredError' ? new AppError('Token expired. Please login again.', 401) : new AppError('Invalid token. Please login again.', 401));
+    // In development, log the underlying JWT error for debugging
+    if (process.env.NODE_ENV === 'development') console.error('JWT verification error:', error);
+
+    // Map common jwt errors to clearer messages
+    if (error.name === 'TokenExpiredError') {
+      return next(new AppError('Token expired. Please login again.', 401));
+    }
+
+    if (error.name === 'JsonWebTokenError') {
+      // e.g. 'jwt malformed', 'invalid signature'
+      return next(new AppError(`Invalid token. ${error.message}`, 401));
+    }
+
+    if (error.name === 'NotBeforeError') {
+      return next(new AppError('Token not active yet. Please try again later.', 401));
+    }
+
+    // Fallback
+    return next(new AppError('Invalid token. Please login again.', 401));
   }
 };
 
